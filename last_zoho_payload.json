@@ -1,0 +1,25 @@
+{
+    "data": {
+        "Job_No": "53874",
+        "HAWB_HBL": "SBKK00500530",
+        "MAWB_MBL": "607-53185171",
+        "ETA": "",
+        "Importer": "340763000000121483",
+        "Branch": "MUMBAI",
+        "Mode": "Air",
+        "Port_Airtel": "MUM",
+        "BE_Type": "SEZ-Z",
+        "Supplier_Exporter": "ECI TELECOM LTD",
+        "Added_By": "Sahil Ghuge",
+        "Airtel_DSR": [
+            {
+                "Invoice_Number": "1041072",
+                "Invoice_Date": "19-MAR-2026",
+                "Total_Inv_Value": "207146",
+                "Product_Qty": "100",
+                "Model_No": "B0HSTHXP2",
+                "Item_Description": "B0HSTHXP2 - NPT-1100H DC SHELF ASSEMBLED OR FIBER OPTIC PRODUCT ITEM CODE - X44994H"
+            }
+        ]
+    }
+}

@@ -1,0 +1,34 @@
+import pandas as pd
+import json
+
+xls = pd.ExcelFile('c:\\projects\\DOCS\\dsr_consolidation\\Copy of nagarkot dsr (002).xlsx')
+
+def analyze_sheet(sheet_name):
+    df = pd.read_excel(xls, sheet_name=sheet_name, skiprows=1) # usually row 1 is missing some header or maybe row 0
+    # Let's just find the row with columns
+    for i in range(5):
+        df = pd.read_excel(xls, sheet_name=sheet_name, skiprows=i)
+        if 'Current Status' in df.columns or 'Current status' in df.columns or any('status' in str(c).lower() for c in df.columns):
+            break
+            
+    status_col = [c for c in df.columns if 'status' in str(c).lower()]
+    if status_col:
+        col = status_col[0]
+        print(f"--- {sheet_name} ---")
+        print("Unique statuses:")
+        # Show top 10 unique statuses
+        unique_statuses = df[col].dropna().unique()
+        for s in unique_statuses[:10]:
+            print(f"  - {s}")
+        
+        print("\nSample rows (Status + some dates):")
+        # Find some date columns
+        date_cols = [c for c in df.columns if 'date' in str(c).lower() or 'on' in str(c).lower() or 'ata' in str(c).lower() or 'dispat' in str(c).lower()]
+        cols_to_show = [col] + date_cols[:5]
+        for _, row in df[df[col].notna()].head(5).iterrows():
+            print({c: row[c] for c in cols_to_show if c in row})
+        print()
+
+for s in xls.sheet_names:
+    if 'clear' in s.lower():
+        analyze_sheet(s)

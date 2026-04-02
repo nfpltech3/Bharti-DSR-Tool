@@ -1,0 +1,473 @@
+﻿================================================================================
+1. ZOHO EXPORT FILE
+================================================================================
+   Rows: 142
+   Columns (78): ['Importer', 'Job No', 'Supplier / Exporter', 'Mode', 'BE Type', 'Port', 'ETA', 'Current Status', 'Demurrage / Detention charges', 'WPC Expiry Date', 'TAT Inbond', 'TAT Outbond', 'FTWZ Storage Approx', 'Duty Interest', 'Penalty', 'PO Number', 'Circle', 'Concern Person', 'FTA No', 'FTA Date', 'Original FTA Recd Date', 'IGM Date', 'Inward Date', 'Arrived at FTWZ', 'MAWB/MBL', 'HAWB/HBL', 'No Of Pkgs', 'Chargeable Weight', 'Container No', 'Line / Forwarder', 'DO Amount', 'IB Pre-alert recd on', 'IB Checklist Sent On', 'IB Checklist Approved On', 'Req ID Inbond', 'IB BE No', 'IB BE Date', 'Inbond Cleared On', 'IB Remarks', 'Outbond Process', 'OB Job No', 'OB BE Type', 'OB Checklist Sent On', 'OB Checklist Approved On', 'Req ID Outbond', 'OB BE No', 'OB BE Date', 'IB Assbl. Value', 'OB Assbl. Value', 'IB Duty', 'OB Duty', 'IB Duty req sent on', 'IB Duty received', 'OB Duty req sent on', 'OB Duty received', 'Duty TAT', 'OB OOC Date', 'IB Dispatch Date', 'OB Dispatch Date', 'IB Vehicle No', 'OB Vehicle No', 'IB Move By', 'OB Move By', 'IB Vehicle Type', 'OB Vehicle Type', 'Tpt Fright', 'IB Delivery Date', 'OB Delivery Date', 'OB Remarks', 'Other Charges', 'Demurrage Mail Sent On', 'Demurrage Approved Date', 'Form i req date', 'Form i recd date', 'Airtel DSR', 'FTWZ Status', 'Bill Done On', 'Billing Status']
+
+   Job No column matched as: 'Job No'
+   Unique Job Numbers in Zoho Export: 129
+   Sample jobs: ['52581', '52620', '52789', '52971', '53002', '53004', '53076', '53297', '53298', '53300']
+
+================================================================================
+2. MANUAL DSR FILE ΓÇö SHEET-BY-SHEET ANALYSIS
+================================================================================
+   Total Sheets: 5
+   Sheet Names:  ['FTA Pending ', 'FTA Cleared ', 'Normal shipment', 'Normal cleared ', 'Sheet5']
+
+--------------------------------------------------------------------------------
+   SHEET: 'FTA Pending '
+--------------------------------------------------------------------------------
+   Rows: 57,  Columns: 70
+   Raw columns:
+      - 'Unnamed: 0'
+      - 'logisys'
+      - 'logisys.1'
+      - 'logisys.2'
+      - 'logisys.3'
+      - 'logisys.4'
+      - 'logisys.5'
+      - 'logisys (?)'
+      - 'shakti'
+      - 'shakti.1'
+      - '?'
+      - 'dropdown'
+      - 'manual'
+      - 'logisys.6'
+      - 'manual.1'
+      - 'formula'
+      - 'formula.1'
+      - 'blank'
+      - 'manual.2'
+      - 'manual.3'
+      - 'dropdown.1'
+      - 'from circle'
+      - 'manual.4'
+      - 'manual.5'
+      - 'manual / shakti'
+      - 'shakti.2'
+      - 'logisys.7'
+      - 'shakti (ATA)'
+      - 'manual.6'
+      - 'shakti/logisys'
+      - 'shakti/logisys.1'
+      - 'logisys.8'
+      - 'logisys.9'
+      - 'shakti/logisys.2'
+      - 'dropdown.2'
+      - 'shakti (?)'
+      - 'added time of pre-alert'
+      - 'Checklist verified on of pre-alert'
+      - 'Checklist verified by client on of pre-alert'
+      - 'blank.1'
+      - 'logisys.10'
+      - 'logisys.11'
+      - 'OOC of pre-alert'
+      - 'manual.7'
+      - 'which date?'
+      - 'shakti.3'
+      - '?.1'
+      - 'Checklist verified on of pre-alert.1'
+      - 'checklist verified by client on of pre-alert'
+      - 'blank.2'
+      - 'logisys.12'
+      - 'logisys.13'
+      - 'logisys.14'
+      - 'logisys (Customs Duty)'
+      - 'Duty called on of pre-alert'
+      - 'Duty paid by client on of pre-alert'
+      - 'formula.2'
+      - 'OOC Date from pre-alert'
+      - 'shakti - dispatch date'
+      - 'shakti.4'
+      - 'nagarkot always?'
+      - 'shakti.5'
+      - 'blank.3'
+      - 'shakti.6'
+      - 'manual.8'
+      - 'manual.9'
+      - 'when demurrage'
+      - 'when demurrage.1'
+      - 'manual.10'
+      - 'manual.11'
+   [WARN] NO JOB NO COLUMN FOUND -- this sheet will be SKIPPED!
+
+--------------------------------------------------------------------------------
+   SHEET: 'FTA Cleared '
+--------------------------------------------------------------------------------
+   Rows: 545,  Columns: 72
+   Raw columns:
+      - 'Unnamed: 0'
+      - 'ERP'
+      - 'ERP.1'
+      - 'ERP.2'
+      - 'ERP.3'
+      - 'ERP.4'
+      - 'ERP.5'
+      - 'logisys (?)'
+      - 'shakti'
+      - 'ERP (inbond)'
+      - '?'
+      - 'dropdown'
+      - 'manual'
+      - 'logisys'
+      - 'manual.1'
+      - 'formula (IB OOC date - IB ATA)'
+      - 'formula (OB dispatch - Arr at FTWZ)'
+      - 'blank'
+      - 'manual.2'
+      - 'manual.3'
+      - 'dropdown.1'
+      - 'from circle'
+      - 'manual.4'
+      - 'manual.5'
+      - 'manual / shakti'
+      - 'shakti.1'
+      - 'logisys.1'
+      - 'shakti (ATA)'
+      - 'manual.6'
+      - 'shakti/logisys'
+      - 'shakti/logisys.1'
+      - 'logisys.2'
+      - 'logisys.3'
+      - 'shakti/logisys.2'
+      - 'dropdown.2'
+      - 'shakti (?)'
+      - 'added time of pre-alert'
+      - 'Checklist verified on of pre-alert'
+      - 'Checklist verified by client on of pre-alert'
+      - 'blank.1'
+      - 'logisys.4'
+      - 'logisys.5'
+      - 'OOC of pre-alert inbond'
+      - 'manual.7'
+      - 'which date?'
+      - 'shakti.2'
+      - '?.1'
+      - 'Checklist verified on of pre-alert.1'
+      - 'checklist verified by client on of pre-alert'
+      - 'blank.2'
+      - 'logisys.6'
+      - 'logisys.7'
+      - 'logisys.8'
+      - 'logisys (Customs Duty)'
+      - 'Duty called on of pre-alert'
+      - 'Duty paid by client on of pre-alert'
+      - 'formula'
+      - 'OOC Date from pre-alert (outbond)'
+      - 'shakti - dispatch date'
+      - 'shakti.3'
+      - 'nagarkot always?'
+      - 'shakti.4'
+      - 'blank.3'
+      - 'shakti.5'
+      - 'manual.8'
+      - 'manual.9'
+      - 'when demurrage'
+      - 'when demurrage.1'
+      - 'manual.10'
+      - 'manual.11'
+      - 'Unnamed: 70'
+      - 'Unnamed: 71'
+   [WARN] NO JOB NO COLUMN FOUND -- this sheet will be SKIPPED!
+
+--------------------------------------------------------------------------------
+   SHEET: 'Normal shipment'
+--------------------------------------------------------------------------------
+   Rows: 3,  Columns: 48
+   Raw columns:
+      - 'S.N.'
+      - 'JOB'
+      - 'Invoice No.'
+      - 'Invoice Date'
+      - 'Inv value'
+      - 'Port '
+      - 'Mode'
+      - 'Supplier\nName'
+      - 'Status'
+      - 'TAT'
+      - 'Airtel PO No.'
+      - 'Demurrage\n Amnt'
+      - 'Interest                        Rs.'
+      - 'Penalty'
+      - 'person'
+      - 'Circle Name'
+      - 'MAWB'
+      - 'HAWB'
+      - 'D.O Amount'
+      - 'Forwarder'
+      - 'Pkgs'
+      - 'Ch. Wt.'
+      - 'SI Rcd. Date'
+      - 'C.List send on'
+      - 'C.List \napproved on'
+      - 'RQ ID'
+      - 'BOE No'
+      - 'BOE Date'
+      - 'ETA'
+      - 'Ass value '
+      - 'duty'
+      - 'Duty req. on'
+      - 'Duty Recd on'
+      - 'OC Date'
+      - 'Cleared\n / dispatch'
+      - 'Vehicle no '
+      - 'move by'
+      - 'Vehicles type'
+      - 'Tpt Fright '
+      - 'Delivered to WH on'
+      - 'Interest                        Rs..1'
+      - 'Penalty.1'
+      - 'Demmurrage '
+      - 'WPC/ETA/Letter/ remarks '
+      - 'Remarks'
+      - 'Bill Done On'
+      - 'Demurrage mail sent date'
+      - 'Demurrage Approved date'
+
+   [OK] Job No column: 'JOB'
+   Total jobs in sheet:    3
+   Jobs matching Zoho:     0
+   Jobs ONLY in manual:    3
+      ΓåÆ ['53251', '53252', '53285']
+
+   FIELD MATCHING:
+      [OK] Current status                 <- ['Status']
+      [OK] Duty Interest                  <- ['Interest                        Rs.', 'Interest                        Rs..1']
+      [OK] Penalty                        <- ['Penalty', 'Penalty.1']
+      [OK] PO Number                      <- ['Airtel PO No.']
+      [OK] Circle                         <- ['Circle Name']
+      [OK] Concern Person                 <- ['person']
+      [OK] Line / Forwarder               <- ['Forwarder']
+      [OK] Req ID Inbond                  <- ['RQ ID']
+      [OK] IB Remarks                     <- ['Remarks']
+      [OK] Tpt Fright                     <- ['Tpt Fright ']
+      [OK] Demurrage Mail Sent On         <- ['Demurrage mail sent date']
+      [OK] Demurrage Approved Date        <- ['Demurrage Approved date']
+      [OK] Bill Done On                   <- ['Bill Done On']
+
+   [MISS] Fields NOT found in this sheet:
+      - WPC Expiry Date
+      - FTWZ Storage Approx
+      - FTA No
+      - FTA Date
+      - Original FTA Recd Date
+      - Arrived at FTWZ
+      - Outbond Process
+      - Req ID Outbond
+      - OB Remarks
+      - Other Charges
+      - Form i req date
+      - Form i recd date
+      - Billing Status
+
+   [WARN] Manual columns NOT matched by any alias (potential data loss):
+      - 'S.N.'
+      - 'Invoice No.'
+      - 'Invoice Date'
+      - 'Inv value'
+      - 'Port '
+      - 'Mode'
+      - 'Supplier\nName'
+      - 'TAT'
+      - 'Demurrage\n Amnt'
+      - 'MAWB'
+      - 'HAWB'
+      - 'D.O Amount'
+      - 'Pkgs'
+      - 'Ch. Wt.'
+      - 'SI Rcd. Date'
+      - 'C.List send on'
+      - 'C.List \napproved on'
+      - 'BOE No'
+      - 'BOE Date'
+      - 'ETA'
+      - 'Ass value '
+      - 'duty'
+      - 'Duty req. on'
+      - 'Duty Recd on'
+      - 'OC Date'
+      - 'Cleared\n / dispatch'
+      - 'Vehicle no '
+      - 'move by'
+      - 'Vehicles type'
+      - 'Delivered to WH on'
+      - 'Demmurrage '
+      - 'WPC/ETA/Letter/ remarks '
+
+--------------------------------------------------------------------------------
+   SHEET: 'Normal cleared '
+--------------------------------------------------------------------------------
+   Rows: 108,  Columns: 49
+   Raw columns:
+      - 'S.N'
+      - 'Nagarkot Job'
+      - 'Invoice No.'
+      - 'Invoice Date'
+      - 'Inv value'
+      - 'Port of Clearence'
+      - 'Mode\n'
+      - 'Supplier \n Name'
+      - 'Status'
+      - 'TAT'
+      - 'Airtel PO No.'
+      - 'Demurrage\n Amnt'
+      - 'Interest                        Rs.'
+      - 'Penalty'
+      - 'Person'
+      - 'Circle Name'
+      - 'MAWB'
+      - 'HAWB'
+      - 'D.O Amount'
+      - 'container no'
+      - 'No.\n of Pkgs'
+      - 'Gr. Wt.'
+      - 'SI Rcd. Date'
+      - 'C.List send on'
+      - 'C.List \n approved on'
+      - 'RQ ID'
+      - 'BOE No'
+      - 'BOE Date'
+      - 'ATA'
+      - 'Ass Value '
+      - 'Total Duty'
+      - 'Duty req. on'
+      - 'Duty Recd\n on'
+      - 'OC Date'
+      - 'Cleared \n / dispatch'
+      - 'Vehicle no '
+      - 'move by'
+      - 'Vehicles type'
+      - 'Tpt Fright '
+      - 'Delivered \n to WH on'
+      - 'Interest'
+      - 'Penalty.1'
+      - 'Demmurrage '
+      - 'WPC/ETA/\n Declaration/ Letter'
+      - 'Remarks'
+      - 'Delivery date'
+      - 'Demurrage\n mail sent date'
+      - 'Demurrage\n Approved date'
+      - 'Billing Status'
+
+   [OK] Job No column: 'Nagarkot Job'
+   Total jobs in sheet:    108
+   Jobs matching Zoho:     0
+   Jobs ONLY in manual:    108
+
+   FIELD MATCHING:
+      [OK] Current status                 <- ['Status']
+      [OK] Duty Interest                  <- ['Interest', 'Interest                        Rs.']
+      [OK] Penalty                        <- ['Penalty', 'Penalty.1']
+      [OK] PO Number                      <- ['Airtel PO No.']
+      [OK] Circle                         <- ['Circle Name']
+      [OK] Concern Person                 <- ['Person']
+      [OK] Req ID Inbond                  <- ['RQ ID']
+      [OK] IB Remarks                     <- ['Remarks']
+      [OK] Tpt Fright                     <- ['Tpt Fright ']
+      [OK] Demurrage Mail Sent On         <- ['Demurrage\n mail sent date']
+      [OK] Demurrage Approved Date        <- ['Demurrage\n Approved date']
+      [OK] Billing Status                 <- ['Billing Status']
+
+   [MISS] Fields NOT found in this sheet:
+      - WPC Expiry Date
+      - FTWZ Storage Approx
+      - FTA No
+      - FTA Date
+      - Original FTA Recd Date
+      - Arrived at FTWZ
+      - Line / Forwarder
+      - Outbond Process
+      - Req ID Outbond
+      - OB Remarks
+      - Other Charges
+      - Form i req date
+      - Form i recd date
+      - Bill Done On
+
+   [WARN] Manual columns NOT matched by any alias (potential data loss):
+      - 'S.N'
+      - 'Invoice No.'
+      - 'Invoice Date'
+      - 'Inv value'
+      - 'Port of Clearence'
+      - 'Mode\n'
+      - 'Supplier \n Name'
+      - 'TAT'
+      - 'Demurrage\n Amnt'
+      - 'MAWB'
+      - 'HAWB'
+      - 'D.O Amount'
+      - 'container no'
+      - 'No.\n of Pkgs'
+      - 'Gr. Wt.'
+      - 'SI Rcd. Date'
+      - 'C.List send on'
+      - 'C.List \n approved on'
+      - 'BOE No'
+      - 'BOE Date'
+      - 'ATA'
+      - 'Ass Value '
+      - 'Total Duty'
+      - 'Duty req. on'
+      - 'Duty Recd\n on'
+      - 'OC Date'
+      - 'Cleared \n / dispatch'
+      - 'Vehicle no '
+      - 'move by'
+      - 'Vehicles type'
+      - 'Delivered \n to WH on'
+      - 'Demmurrage '
+      - 'WPC/ETA/\n Declaration/ Letter'
+      - 'Delivery date'
+
+--------------------------------------------------------------------------------
+   SHEET: 'Sheet5'
+--------------------------------------------------------------------------------
+   Rows: 0,  Columns: 0
+   Raw columns:
+   [WARN] NO JOB NO COLUMN FOUND -- this sheet will be SKIPPED!
+
+================================================================================
+3. OVERALL SUMMARY
+================================================================================
+   Zoho Export jobs:          129
+   Manual DSR jobs (all):     111
+   Jobs in BOTH:              0
+   Jobs only in Zoho:         129
+   Jobs only in Manual:       111
+
+   FIELDS MATCHED ACROSS ALL SHEETS:
+      [OK]   Current status                 -> found in 'Normal shipment', 'Normal cleared '
+      [MISS] WPC Expiry Date                -> NOT FOUND in any sheet!
+      [MISS] FTWZ Storage Approx            -> NOT FOUND in any sheet!
+      [OK]   Duty Interest                  -> found in 'Normal shipment', 'Normal cleared '
+      [OK]   Penalty                        -> found in 'Normal shipment', 'Normal cleared '
+      [OK]   PO Number                      -> found in 'Normal shipment', 'Normal cleared '
+      [OK]   Circle                         -> found in 'Normal shipment', 'Normal cleared '
+      [OK]   Concern Person                 -> found in 'Normal shipment', 'Normal cleared '
+      [MISS] FTA No                         -> NOT FOUND in any sheet!
+      [MISS] FTA Date                       -> NOT FOUND in any sheet!
+      [MISS] Original FTA Recd Date         -> NOT FOUND in any sheet!
+      [MISS] Arrived at FTWZ                -> NOT FOUND in any sheet!
+      [OK]   Line / Forwarder               -> found in 'Normal shipment'
+      [OK]   Req ID Inbond                  -> found in 'Normal shipment', 'Normal cleared '
+      [OK]   IB Remarks                     -> found in 'Normal shipment', 'Normal cleared '
+      [MISS] Outbond Process                -> NOT FOUND in any sheet!
+      [MISS] Req ID Outbond                 -> NOT FOUND in any sheet!
+      [OK]   Tpt Fright                     -> found in 'Normal shipment', 'Normal cleared '
+      [MISS] OB Remarks                     -> NOT FOUND in any sheet!
+      [MISS] Other Charges                  -> NOT FOUND in any sheet!
+      [OK]   Demurrage Mail Sent On         -> found in 'Normal shipment', 'Normal cleared '
+      [OK]   Demurrage Approved Date        -> found in 'Normal shipment', 'Normal cleared '
+      [MISS] Form i req date                -> NOT FOUND in any sheet!
+      [MISS] Form i recd date               -> NOT FOUND in any sheet!
+      [OK]   Bill Done On                   -> found in 'Normal shipment'
+      [OK]   Billing Status                 -> found in 'Normal cleared '
+
+================================================================================
+4. SAMPLE MERGE PREVIEW (first 3 overlapping jobs)
+================================================================================
+
+================================================================================
+DIAGNOSTIC COMPLETE
+================================================================================

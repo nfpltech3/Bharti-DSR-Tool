@@ -1,0 +1,49 @@
+import pandas as pd
+import warnings
+warnings.filterwarnings('ignore')
+
+file_path = 'c:\\projects\\DOCS\\dsr_consolidation\\Copy of nagarkot dsr (002).xlsx'
+xls = pd.ExcelFile(file_path)
+
+# We want to collect all sheets
+all_data = []
+for sheet in xls.sheet_names:
+    df = pd.read_excel(xls, sheet_name=sheet, skiprows=1)
+    
+    # Try to find a Job No column
+    job_col = [c for c in df.columns if 'job no' in str(c).lower()]
+    
+    if not job_col:
+        continue
+    
+    # These are potential manual column keywords
+    manual_keywords = [
+        'port', 'req id', 'wpc', 'ftwz storage', 'duty interest',
+        'po no', 'circle', 'concern', 'fta', 'arrived at ftwz',
+        'line / forwarder', 'tpt', 'other charges', 'demurrage',
+        'form i', 'description', 'manual'
+    ]
+    
+    cols_to_keep = [job_col[0]]
+    for col in df.columns:
+        if any(keyword in str(col).lower() for keyword in manual_keywords) and col not in cols_to_keep:
+            cols_to_keep.append(col)
+            
+    filtered_df = df[cols_to_keep].dropna(subset=[job_col[0]])
+    filtered_df.rename(columns={job_col[0]: 'Inbond_Job_No'}, inplace=True)
+    all_data.append(filtered_df)
+
+if all_data:
+    final_df = pd.concat(all_data, ignore_index=True)
+    
+    # Deduplicate by Job No
+    final_df = final_df.drop_duplicates(subset=['Inbond_Job_No'])
+    
+    output_path = 'c:\\projects\\DOCS\\dsr_consolidation\\DSR_Manual_Upload.xlsx'
+    final_df.to_excel(output_path, index=False)
+    print(f"Successfully generated manual upload file: {output_path}")
+    print("Columns extracted:")
+    for c in final_df.columns:
+        print(f"- {c}")
+else:
+    print("No valid sheets found.")

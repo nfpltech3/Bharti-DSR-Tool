@@ -1,0 +1,68 @@
+// ============================================================================
+// DSR REAL-TIME TRIGGER (ALIGNED WITH WORKING COLLECTION PATTERN)
+// ============================================================================
+be_type = ifnull(input.BE_Type,"").toString();
+job_no_raw = ifnull(input.Job_No,0);
+job_no = if(job_no_raw == 0, "", job_no_raw.toString());
+
+// Importer lookup fetch
+importer = ifnull(input.Importer.Importer,"").toString();
+
+if(importer.contains("BHARTI AIRTEL") || importer.contains("BHARTI HEXACOM"))
+{
+	if(be_type == "SEZ-Z" || be_type == "Home")
+	{
+		// 1. Prepare Subform Collection
+		subform_rows = Collection();
+		for each  r in input.Airtel_DSR1
+		{
+			row = Test_Airtel_DSR.Airtel_DSR1();
+			row.Invoice_Number=r.Invoice_Number;
+			row.Invoice_Date=r.Invoice_Date;
+			row.Total_Inv_Value=r.Total_Inv_Value;
+			row.Product_Qty=r.Product_Qty;
+			row.Model_No=r.Model_No;
+			row.Item_Description=r.Item_Description;
+			subform_rows.insert(row);
+		}
+
+		// 2. Identify Target DSR
+		existing = Test_Airtel_DSR[Inbond_Job_lookup == input.ID];
+		if(existing.count() == 0 && job_no != "")
+		{
+			existing = Test_Airtel_DSR[Inbond_Job_No == job_no];
+		}
+
+		if(existing.count() > 0)
+		{
+			// UPDATE existing row
+			for each  master in existing
+			{
+				master.Inbond_Job_lookup=input.ID;
+				master.Inbond_Job_No=job_no;
+				master.FTWZ_Status = if(be_type == "Home", if(ifnull(input.Dispatch_Date,"").toString() != "", "Normal Cleared", "Normal Shipment"), "FTWZ Pending");
+				
+				// Fix: Use .insert() for existing records instead of direct = assignment
+				master.Airtel_DSR1.clear();
+				if(subform_rows.size() > 0)
+				{
+					master.Airtel_DSR1.insert(subform_rows);
+				}
+			}
+		}
+		else
+		{
+			// CREATE new Master DSR row with Subform
+			initial_status = if(be_type == "Home", if(ifnull(input.Dispatch_Date,"").toString() != "", "Normal Cleared", "Normal Shipment"), "FTWZ Pending");
+			
+			insert into Test_Airtel_DSR
+			[
+				Added_User=zoho.loginuser
+				Inbond_Job_No=job_no
+				Inbond_Job_lookup=input.ID
+				FTWZ_Status=initial_status
+				Airtel_DSR1=subform_rows
+			]
+		}
+	}
+}

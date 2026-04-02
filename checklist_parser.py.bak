@@ -1,0 +1,120 @@
+import pdfplumber
+import re
+import sys
+
+def parse_checklist(pdf_path):
+    # Field storage
+    job_no = None
+    be_type = None
+    port = None
+    mode = None
+    supplier = None
+    
+    invoices = []
+    
+    current_invoice = {}
+    
+    text_all = ""
+    
+    # We will use pdfplumber to get text
+    with pdfplumber.open(pdf_path) as pdf:
+        for page in pdf.pages:
+            text = page.extract_text()
+            if text:
+                text_all += text + "\n"
+                
+    # Parse global fields
+    match = re.search(r'Job No\s+([A-Z0-9/\-]+)', text_all)
+    if match:
+        job_no = match.group(1)
+        
+    match = re.search(r'BILL OF ENTRY FOR\s+([A-Z\-]+)', text_all)
+    if match:
+        be_type = match.group(1)
+        if be_type == "SEZ-Z":
+            be_type = "Inbond"
+            
+    match = re.search(r'Port of Reporting\s+(.+)', text_all)
+    if match:
+        reporting = match.group(1).upper()
+        if "SEA" in reporting:
+            mode = "SEA"
+        elif "AIR" in reporting:
+            mode = "AIR"
+        port = reporting.split(" ")[0]
+        
+    match = re.search(r'Supplier Name\s+(.+)', text_all)
+    if match:
+        supplier = match.group(1).strip()
+        
+    # Find all invoices
+    inv_blocks = text_all.split("Invoice Detail")
+    
+    invoice_nos = []
+    invoice_dates = []
+    invoice_values = []
+    
+    for block in inv_blocks[1:]:
+        m_no_date = re.search(r'Inv No & Date\s+(\S+)\s+dt\.\s+(\S+)', block)
+        m_val = re.search(r'Invoice Value\s+([\d\.]+)', block)
+        
+        if m_no_date:
+            invoice_nos.append(m_no_date.group(1))
+            invoice_dates.append(m_no_date.group(2))
+        if m_val:
+            invoice_values.append(m_val.group(1).rstrip(".00") or m_val.group(1))
+
+    # Parse items
+    # Items are usually found in ITEM DETAILS section
+    qty_list = []
+    models = []
+    descriptions = []
+    
+    lines = text_all.split('\n')
+    in_item_details = False
+    
+    current_desc = []
+    current_model = None
+    
+    # Instead of lines, let's use regex on the whole text to find item blocks
+    # Look for patterns like:
+    # 1 85176290 CGHODUQY4 BR-0328-0 MW RADIO...
+    # \d{2}\.\d{6} \d{4}\.\d{6} 85176290
+    
+    item_matches = re.finditer(r'^\s*(\d+)\s+(\d{8})\s+(.+?)(?=\n\s*\d+\.\d{6}\s+\d+\.\d{6})', text_all, re.MULTILINE | re.DOTALL)
+    for m in item_matches:
+        sl_no = m.group(1)
+        # The description line often contains the model.
+        # But we also have "Qty" in the next line.
+        desc_raw = m.group(3).replace('\n', ' ')
+        # Find Model: usually looks like BR-0328-0
+        m_mod = re.search(r'[A-Z0-9]+\-[A-Z0-9]+\-\d', desc_raw) 
+        if m_mod:
+            models.append(m_mod.group(0))
+        
+        # We need to find the QTY for this item.
+        # It's usually the first number on the next line.
+        # Let's just find the QTY from the end of the group in text_all
+        end_pos = m.end()
+        next_chunk = text_all[end_pos:end_pos+200]
+        qty_match = re.search(r'^\s*([\d\.]+)\s+[\d\.]+', next_chunk, re.MULTILINE)
+        if qty_match:
+            qty = str(int(float(qty_match.group(1))))
+            qty_list.append(qty)
+            
+        descriptions.append(desc_raw)
+
+    print("Job_No=" + str(job_no))
+    print("Invoice_Numbers=" + ",".join(invoice_nos))
+    print("Invoice_Dates=" + ",".join(invoice_dates))
+    print("Invoice_Values=" + ",".join(invoice_values))
+    print("Supplier=" + str(supplier))
+    print("Model_Nos=" + ",".join(models))
+    print("Description=" + " \\n".join(descriptions)[:100] + "...")
+    print("Qty_List=" + ",".join(qty_list))
+    print("Mode=" + str(mode))
+    print("BE_Type=" + str(be_type))
+    print("Port=" + str(port))
+
+if __name__ == "__main__":
+    parse_checklist(r"c:\projects\DOCS\dsr_consolidation\Import CheckList-IR5330725-26-13-FEB-2026_08_05_PM.pdf")

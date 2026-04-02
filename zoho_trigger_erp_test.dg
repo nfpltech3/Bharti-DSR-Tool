@@ -1,0 +1,41 @@
+// ============================================================================
+// DSR ERP TRIGGER (SIMPLIFIED FOR LOOKUPS)
+// Attach this to: Test_ERP form → Workflow → On Create + On Edit
+// ============================================================================
+
+erp_type = ifnull(input.BE_Type,"").toString();
+erp_job_no = ifnull(input.Job_No.Job_No,0).toString();
+
+info "ERP Trigger: Job=" + erp_job_no + " | Type=" + erp_type;
+
+if(erp_job_no != "" && erp_job_no != "0")
+{
+	// If it's an Inbond ERP record, link the Inbond_BE_Lookup
+	if(erp_type == "SEZ-Z" || erp_type == "Home")
+	{
+		master_rows = Test_Airtel_DSR[Inbond_Job_No == erp_job_no];
+		if(master_rows.count() > 0)
+		{
+			for each m in master_rows
+			{
+				m.Inbond_BE_lookup=input.ID;
+			}
+		}
+	}
+	// If it's an Exbond ERP record, link the Exbond_BE_Lookup
+	else if(erp_type == "SEZ-T")
+	{
+		master_rows = Test_Airtel_DSR[Exbond_Job_No == erp_job_no];
+		if(master_rows.count() > 0)
+		{
+			for each m in master_rows
+			{
+				m.Exbond_BE_lookup=input.ID;
+			}
+		}
+	}
+}
+else
+{
+	info "No Job_No found to map the ERP Record.";
+}

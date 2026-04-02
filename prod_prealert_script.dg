@@ -1,0 +1,87 @@
+// ============================================================================
+// DSR SYNC (MINIMAL - ONLY REQUIRED FIELDS)
+// Updates:
+// - Inbond_Job_No / Lookup
+// - Exbond_Job_No / Lookup
+// - Airtel_DSR subform
+// - FTWZ_Status
+// ============================================================================
+be_type = ifnull(input.BE_Type,"").toString();
+job_no_raw = ifnull(input.Job_No,0);
+job_no = if(job_no_raw == 0,"",job_no_raw.toString());
+importer = ifnull(input.Importer.Importer,"").toString();
+if(importer.contains("BHARTI AIRTEL") || importer.contains("BHARTI HEXACOM"))
+{
+	// ========================== INBOND ==========================
+	if(be_type == "SEZ-Z" || be_type == "Home")
+	{
+		// Build subform
+		subform_rows = Collection();
+		for each  r in input.Airtel_DSR
+		{
+			row = Bharti_DSR.Airtel_DSR();
+			row.Invoice_Number=r.Invoice_Number;
+			row.Invoice_Date=r.Invoice_Date;
+			row.Total_Inv_Value=r.Total_Inv_Value;
+			row.Product_Qty=r.Product_Qty;
+			row.Model_No=r.Model_No;
+			row.Item_Description=r.Item_Description;
+			subform_rows.insert(row);
+		}
+		// Match (lookup first)
+		master_rows = Bharti_DSR[Inbond_Job_Lookup == input.ID];
+		if(master_rows.count() > 0)
+		{
+			for each  m in master_rows
+			{
+				m.Inbond_Job_Lookup=input.ID;
+				m.Inbond_Job_No=job_no;
+				// Subform sync
+				m.Airtel_DSR.clear();
+				if(subform_rows.size() > 0)
+				{
+					m.Airtel_DSR.insert(subform_rows);
+				}
+			}
+		}
+		else
+		{
+			insert into Bharti_DSR
+			[
+				Added_User=zoho.loginuser
+				Inbond_Job_No=job_no
+				Inbond_Job_Lookup=input.ID
+				Airtel_DSR=subform_rows
+			]
+		}
+	}
+	// ========================== EXBOND ==========================
+	else if(be_type == "SEZ-T")
+	{
+		parent_lookup = input.In_Bond_Job_No;
+		// Match (lookup based)
+		if(parent_lookup != null)
+		{
+			master_rows = Bharti_DSR[Inbond_Job_Lookup == parent_lookup];
+		}
+		if(master_rows.count() > 0)
+		{
+			for each  m in master_rows
+			{
+				m.Exbond_Job_Lookup=input.ID;
+				m.Exbond_Job_No=job_no;
+			}
+		}
+		else if(parent_lookup != null)
+		{
+			insert into Bharti_DSR
+			[
+				Added_User=zoho.loginuser
+				Inbond_Job_No=ifnull(input.In_Bond_Job_No.Job_No,"").toString()
+				Inbond_Job_Lookup=parent_lookup
+				Exbond_Job_No=job_no
+				Exbond_Job_Lookup=input.ID
+			]
+		}
+	}
+}

@@ -1,0 +1,31 @@
+import pandas as pd
+import os
+
+input_file = 'BHARTI DSR Report (2).xlsx'
+
+if not os.path.exists(input_file):
+    print(f"ERROR: Could not find '{input_file}'.")
+else:
+    raw_data = pd.read_excel(input_file)
+    
+    # Change to 'FTWZ_Status' if your Excel file uses the underscore
+    column_name = 'FTWZ Status' 
+
+    if column_name not in raw_data.columns:
+        print(f"ERROR: The column '{column_name}' was not found.")
+        print(f"Available columns are: {raw_data.columns.tolist()}")
+    else:
+        statuses = ['FTA Pending', 'FTA Cleared', 'Normal Shipment', 'Normal Cleared']
+
+        with pd.ExcelWriter('Client_DSR_Report.xlsx', engine='openpyxl') as writer:
+            for status in statuses:
+                # 1. Filter the data for the current status
+                filtered_data = raw_data[raw_data[column_name] == status]
+                
+                # 2. Drop the status column before writing
+                data_to_write = filtered_data.drop(columns=[column_name])
+                
+                # 3. Write to a specific sheet named after the status
+                data_to_write.to_excel(writer, sheet_name=status, index=False)
+
+        print("SUCCESS: Report generated and the status column has been removed from the sheets!")

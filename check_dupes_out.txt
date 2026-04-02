@@ -1,0 +1,48 @@
+
+=== Sheet: 'Normal shipment' ===
+  Penalty columns: ['Penalty', 'Penalty.1']
+  Interest columns: ['Interest                        Rs.', 'Interest                        Rs..1']
+  Job column: 'JOB'
+
+  Penalty column comparison (first 10 rows):
+    Job 53901: 'nan' vs 'nan'
+    Job 53906: 'nan' vs 'nan'
+    Job 53950: 'nan' vs 'nan'
+
+  Interest column comparison (first 10 rows):
+    Job 53901: 'nan' vs 'nan'
+    Job 53906: '579' vs 'nan'
+    Job 53950: 'nan' vs 'nan'
+
+  Sheet name = 'Normal shipment'
+
+=== Sheet: 'Normal cleared ' ===
+  Penalty columns: ['Penalty', 'Penalty.1']
+  Interest columns: ['Interest                        Rs.', 'Interest']
+  Job column: 'Nagarkot Job'
+
+  Penalty column comparison (first 10 rows):
+    Job 48454: 'nan' vs 'nan'
+    Job 48456: 'nan' vs 'nan'
+    Job 48457: 'nan' vs 'nan'
+    Job 48458: 'nan' vs 'nan'
+    Job 48459: 'nan' vs 'nan'
+    Job 48460: 'nan' vs 'nan'
+    Job 48455: 'nan' vs 'nan'
+    Job 49191: 'nan' vs 'nan'
+    Job 49215: 'nan' vs 'nan'
+    Job 49223: 'nan' vs 'nan'
+
+  Interest column comparison (first 10 rows):
+    Job 48454: '231' vs 'nan'
+    Job 48456: '1664' vs 'nan'
+    Job 48457: '37' vs 'nan'
+    Job 48458: '231' vs 'nan'
+    Job 48459: '370' vs 'nan'
+    Job 48460: '133' vs 'nan'
+    Job 48455: '247' vs 'nan'
+    Job 49191: '192' vs 'nan'
+    Job 49215: 'nan' vs 'nan'
+    Job 49223: 'nan' vs 'nan'
+
+  Sheet name = 'Normal cleared'

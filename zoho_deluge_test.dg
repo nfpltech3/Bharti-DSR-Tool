@@ -1,0 +1,268 @@
+void consolidate_DSR_Test()
+{
+    info "DSR Consolidation Started: " + zoho.currenttime;
+
+    // 1. Get Pre-Alert records
+    pa_inbond = Test_PreAlert[BE_Type == "SEZ-Z"];
+    pa_exbond = Test_PreAlert[BE_Type == "SEZ-T"];
+    info "Inbond records: " + pa_inbond.count();
+    info "Exbond records: " + pa_exbond.count();
+
+    // 2. Iterate Inbonds and merge
+    merged = 0;
+    inbond_only = 0;
+
+    for each inb in pa_inbond
+    {
+        hawb = ifnull(inb.HAWB_HBL,"");
+        invoice_ref = ifnull(inb.Client_Ref_No,"");
+        inb_beno = ifnull(inb.BE_No,0).toString();
+        inb_jobno = ifnull(inb.Job_No,0).toString();
+
+        if(invoice_ref != "")
+        {
+            // --- INBOND VALUES (strings/numbers only) ---
+            r_Invoice_Number = invoice_ref;
+            r_Importer = ifnull(inb.Importer,"").toString();
+            r_Mode = ifnull(inb.Mode,"").toString();
+            r_Branch = ifnull(inb.Branch,"").toString();
+            r_Inbond_Job_No = inb_jobno;
+            r_MAWB_MBL = ifnull(inb.MAWB_MBL,"");
+            r_HAWB_HBL = hawb;
+            r_Inbond_BE_No = inb_beno;
+            r_Inbond_TAT = ifnull(inb.Total_TAT,0);
+            r_Inbond_ATA_OOC = ifnull(inb.ATA_to_OOC,0);
+            r_Inbond_Status = ifnull(inb.Shipment_Status,"").toString();
+
+            // --- EXBOND VALUES (defaults) ---
+            r_Exbond_Job_No = "";
+            r_Exbond_BE_No = "";
+            r_Exbond_Status = "";
+            r_Exbond_TAT = 0;
+            r_Exbond_ATA_OOC = 0;
+            has_dispatch = false;
+            has_delivery = false;
+            has_ooc = false;
+
+            // --- ERP VALUES (defaults) ---
+            r_Supplier = "";
+            r_Description = "";
+            r_CTH_No = "";
+            r_Custom_House = "";
+            r_Inv_Currency = "";
+            r_Total_Inv_Value = "";
+            r_Inbond_Basic_Duty = 0;
+            r_Inbond_SWS = 0;
+            r_Inbond_IGST = 0;
+            r_Exbond_Basic_Duty = 0;
+            r_Exbond_SWS = 0;
+            r_Exbond_IGST = 0;
+            r_Job_Owner = "";
+
+            // --- ENRICH: Inbond ERP ---
+            inb_beno_num = inb_beno.toLong();
+            if(inb_beno_num > 0)
+            {
+                erp_inb_results = Test_ERP[BE_No == inb_beno_num];
+                for each erp_inb in erp_inb_results
+                {
+                    r_Supplier = ifnull(erp_inb.Supplier_Exporter,"").toString();
+                    r_Description = ifnull(erp_inb.Description,"").toString();
+                    r_CTH_No = ifnull(erp_inb.CTH_No,0).toString();
+                    r_Custom_House = ifnull(erp_inb.Custom_House,"").toString();
+                    r_Inv_Currency = ifnull(erp_inb.Inv_Currency,"").toString();
+                    r_Total_Inv_Value = ifnull(erp_inb.Total_Inv_Value,"").toString();
+                    r_Inbond_Basic_Duty = ifnull(erp_inb.Total_Basic_Duty,0).toDecimal();
+                    r_Inbond_SWS = ifnull(erp_inb.Total_SWS_Duty,0).toDecimal();
+                    r_Inbond_IGST = ifnull(erp_inb.IGST_Amount,0).toDecimal();
+                    r_Job_Owner = ifnull(erp_inb.Job_Owner,"").toString();
+                }
+                info "  ERP enriched for BE: " + inb_beno;
+            }
+
+            // --- MATCH EXBOND ---
+            has_exbond = false;
+            if(hawb != "")
+            {
+                exb_results = Test_PreAlert[Client_Ref_No == hawb && BE_Type == "SEZ-T"];
+                for each exb in exb_results
+                {
+                    has_exbond = true;
+                    exb_beno = ifnull(exb.BE_No,0).toString();
+                    r_Exbond_Job_No = ifnull(exb.Job_No,0).toString();
+                    r_Exbond_BE_No = exb_beno;
+                    r_Exbond_TAT = ifnull(exb.Total_TAT,0);
+                    r_Exbond_ATA_OOC = ifnull(exb.ATA_to_OOC,0);
+                    r_Exbond_Status = ifnull(exb.Shipment_Status,"").toString();
+
+                    // Check if dispatch/delivery/ooc exist (for status logic)
+                    if(ifnull(exb.Dispatch_Date,"").toString() != "")
+                    {
+                        has_dispatch = true;
+                    }
+                    if(ifnull(exb.Actual_Delivery_Date,"").toString() != "")
+                    {
+                        has_delivery = true;
+                    }
+                    if(ifnull(exb.OOC_date,"").toString() != "")
+                    {
+                        has_ooc = true;
+                    }
+
+                    // Enrich from Exbond ERP
+                    exb_beno_num = exb_beno.toLong();
+                    if(exb_beno_num > 0)
+                    {
+                        erp_exb_results = Test_ERP[BE_No == exb_beno_num];
+                        for each erp_exb in erp_exb_results
+                        {
+                            r_Exbond_Basic_Duty = ifnull(erp_exb.Total_Basic_Duty,0).toDecimal();
+                            r_Exbond_SWS = ifnull(erp_exb.Total_SWS_Duty,0).toDecimal();
+                            r_Exbond_IGST = ifnull(erp_exb.IGST_Amount,0).toDecimal();
+                        }
+                    }
+                }
+            }
+
+            if(has_exbond)
+            {
+                merged = merged + 1;
+                info "MERGED: " + invoice_ref + " | " + r_Inbond_Job_No + " <-> " + r_Exbond_Job_No;
+            }
+            else
+            {
+                inbond_only = inbond_only + 1;
+                info "INBOND ONLY: " + invoice_ref + " | " + r_Inbond_Job_No;
+            }
+
+            // --- DERIVE STATUS (using flags instead of date comparisons) ---
+            r_Master_Status = "Unknown";
+
+            // Check Inbond flags
+            inb_has_dispatch = false;
+            inb_has_ooc = false;
+            inb_has_ata = false;
+            inb_has_eta = false;
+            if(ifnull(inb.Dispatch_Date,"").toString() != "")
+            {
+                inb_has_dispatch = true;
+            }
+            if(ifnull(inb.OOC_date,"").toString() != "")
+            {
+                inb_has_ooc = true;
+            }
+            if(ifnull(inb.ATA,"").toString() != "")
+            {
+                inb_has_ata = true;
+            }
+            if(ifnull(inb.ETA,"").toString() != "")
+            {
+                inb_has_eta = true;
+            }
+
+            if(has_exbond)
+            {
+                if(r_Inbond_Status == "Closed" && r_Exbond_Status == "Closed")
+                {
+                    if(has_delivery)
+                    {
+                        r_Master_Status = "Fully Closed & Delivered";
+                    }
+                    else
+                    {
+                        r_Master_Status = "Fully Closed (No POD)";
+                    }
+                }
+                else if(has_delivery)
+                {
+                    r_Master_Status = "Delivered";
+                }
+                else if(has_dispatch)
+                {
+                    r_Master_Status = "In Transit (Final Dispatch)";
+                }
+                else if(has_ooc)
+                {
+                    r_Master_Status = "Exbond Cleared (OOC)";
+                }
+                else
+                {
+                    r_Master_Status = "Exbond In Progress";
+                }
+            }
+            else
+            {
+                if(r_Inbond_Status == "Closed")
+                {
+                    r_Master_Status = "Inbond Closed - Awaiting Exbond";
+                }
+                else if(inb_has_dispatch)
+                {
+                    r_Master_Status = "In Bond / Warehoused";
+                }
+                else if(inb_has_ooc)
+                {
+                    r_Master_Status = "Inbond Cleared (OOC)";
+                }
+                else if(inb_has_ata)
+                {
+                    r_Master_Status = "Arrived - Clearance Pending";
+                }
+                else if(inb_has_eta)
+                {
+                    r_Master_Status = "In Transit - ETA Set";
+                }
+                else
+                {
+                    r_Master_Status = "Inbond In Progress";
+                }
+            }
+
+            r_Total_Duties = r_Inbond_Basic_Duty + r_Inbond_SWS + r_Inbond_IGST + r_Exbond_Basic_Duty + r_Exbond_SWS + r_Exbond_IGST;
+
+            // --- INSERT (NO date fields — only strings, numbers, decimals) ---
+            insert into Test_Airtel_DSR
+            [
+                Added_User = zoho.loginuser
+                Invoice_Number = r_Invoice_Number
+                Importer = r_Importer
+                Mode = r_Mode
+                Branch = r_Branch
+                Supplier_Exporter = r_Supplier
+                Description = r_Description
+                Custom_House = r_Custom_House
+                Job_Owner = r_Job_Owner
+                Inbond_Job_No = r_Inbond_Job_No
+                MAWB_MBL = r_MAWB_MBL
+                HAWB_HBL = r_HAWB_HBL
+                Inbond_BE_No = r_Inbond_BE_No
+                Inbond_TAT = r_Inbond_TAT
+                Inbond_ATA_to_OOC = r_Inbond_ATA_OOC
+                Inbond_Shipment_Status = r_Inbond_Status
+                Exbond_Job_No = r_Exbond_Job_No
+                Exbond_BE_No = r_Exbond_BE_No
+                Exbond_TAT = r_Exbond_TAT
+                Exbond_ATA_to_OOC = r_Exbond_ATA_OOC
+                Exbond_Shipment_Status = r_Exbond_Status
+                Inv_Currency = r_Inv_Currency
+                Total_Inv_Value = r_Total_Inv_Value
+                Inbond_Basic_Duty = r_Inbond_Basic_Duty
+                Inbond_SWS_Duty = r_Inbond_SWS
+                Inbond_IGST = r_Inbond_IGST
+                Exbond_Basic_Duty = r_Exbond_Basic_Duty
+                Exbond_SWS_Duty = r_Exbond_SWS
+                Exbond_IGST = r_Exbond_IGST
+                Total_Duties_Combined = r_Total_Duties
+                Master_Status = r_Master_Status
+            ];
+            info "Row created: " + r_Invoice_Number + " | " + r_Master_Status;
+        }
+    }
+
+    // Summary
+    total = merged + inbond_only;
+    info "=== CONSOLIDATION COMPLETE ===";
+    info "Merged (Inbond+Exbond): " + merged;
+    info "Inbond Only: " + inbond_only;
+    info "Total rows created: " + total;
+}

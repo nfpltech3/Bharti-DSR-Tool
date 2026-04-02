@@ -1,0 +1,18 @@
+import pandas as pd
+
+xls = pd.ExcelFile('c:\\projects\\DOCS\\dsr_consolidation\\Copy of nagarkot dsr (002).xlsx')
+
+with open('c:\\projects\\DOCS\\dsr_consolidation\\status_analysis.txt', 'w') as f:
+    for sheet_name in xls.sheet_names:
+        if 'clear' in sheet_name.lower():
+            for i in range(5):
+                df = pd.read_excel(xls, sheet_name=sheet_name, skiprows=i)
+                status_cols = [c for c in df.columns if 'status' in str(c).lower()]
+                if status_cols:
+                    col = status_cols[0]
+                    f.write(f"\n--- {sheet_name} ---\n")
+                    f.write("Unique statuses:\n")
+                    unique_statuses = df[col].dropna().unique()
+                    for s in unique_statuses[:20]:
+                        f.write(f"  - {s}\n")
+                    break

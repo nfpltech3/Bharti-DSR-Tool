@@ -1,0 +1,54 @@
+// ============================================================================
+// DSR ERP TRIGGER FOR PRODUCTION (FINAL - FULL LOOKUP BASED)
+// Inbond_Job_Lookup + Exbond_Job_Lookup → Lookup to Pre Alert
+// ERP Job_No → Lookup to Pre Alert
+// Attach: On Create + On Edit (ERP Form)
+// ============================================================================
+try 
+{
+	erp_type = ifnull(input.Type_Of_B_E,"").toString();
+	erp_job_lookup = input.Job_No;
+	
+	if(isNull(erp_job_lookup))
+	{
+		info "ERROR: Job Lookup is empty";
+	}
+	else if(erp_type == "SEZ-Z" || erp_type == "Home")
+	{
+		master_rows = Bharti_DSR[Inbond_Job_Lookup == erp_job_lookup];
+		if(master_rows.count() == 0)
+		{
+			info "ERROR: No Inbond DSR found for Job Lookup ID: " + erp_job_lookup;
+		}
+		else
+		{
+			for each  m in master_rows
+			{
+				m.Inbond_BE_Lookup=input.ID;
+			}
+		}
+	}
+	else if(erp_type == "SEZ-T")
+	{
+		master_rows = Bharti_DSR[Exbond_Job_Lookup == erp_job_lookup];
+		if(master_rows.count() == 0)
+		{
+			info "ERROR: No Exbond DSR found for Job Lookup ID: " + erp_job_lookup;
+		}
+		else
+		{
+			for each  m in master_rows
+			{
+				m.Exbond_BE_Lookup=input.ID;
+			}
+		}
+	}
+	else
+	{
+		info "ERROR: Invalid BE Type: " + erp_type;
+	}
+}
+catch (e)
+{
+	info "SYSTEM ERROR: " + e.toString();
+}
