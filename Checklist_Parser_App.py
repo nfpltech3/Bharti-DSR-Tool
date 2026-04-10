@@ -210,6 +210,11 @@ class ChecklistParserApp:
         style = ttk.Style()
         style.configure("TEntry", padding=6)
         style.configure("TCombobox", padding=6)
+        # Prevents grayed-out look on disabled/readonly comboboxes
+        style.map('TCombobox', fieldbackground=[('readonly', self.WHITE)], selectbackground=[('readonly', self.WHITE)], selectforeground=[('readonly', self.DARK_TEXT)])
+        
+        # Globally disable mousewheel scrolling on comboboxes to prevent accidental changes
+        self.root.bind_class("TCombobox", "<MouseWheel>", lambda e: "break")
 
         for (lk, ll), (rk, rl) in zip(left_fields, right_fields):
             tk.Label(self.form_frame, text=ll, bg=self.WHITE, font=("Arial", 10, "bold")).grid(
@@ -519,7 +524,7 @@ class ChecklistParserApp:
             self.entry_hawb.insert(0, data.get("HAWB_HBL", ""))
             self.entry_mawb.delete(0, tk.END)
             self.entry_mawb.insert(0, data.get("MAWB_MBL", ""))
-            self.combo_mode.set(data.get("Mode", ""))
+            # Removed Mode autofill per user request
             
             imp = data.get("Checklist_Importer_Raw", "").upper()
             if "AIRTEL" in imp: self.combo_importer.set("BHARTI AIRTEL LIMITED")
@@ -728,27 +733,84 @@ class ChecklistParserApp:
             if not token: token = self.refresh_zoho_token()
             
             if token:
-                job_no = payload["data"]["Job_No"]
-                search_params = {"criteria": f'Job_No == {job_no}'}
+                # Normalization helper for insensitive/punctuation-free matching
+                def normalize_str(s):
+                    return re.sub(r'[^A-Za-z0-9]', '', str(s)).upper() if s else ""
+
+                parsed_hawb_norm = normalize_str(raw_hawb)
+                parsed_mawb_norm = normalize_str(raw_mawb)
+                parsed_job_norm = normalize_str(payload["data"]["Job_No"])
+
+                # Build OR search using exact == matches (proven Zoho V2 API syntax).
+                # Python-side normalization handles case/punctuation differences.
+                criteria_parts = []
+                if hawb_clean:
+                    criteria_parts.append(f'(HAWB_HBL == "{hawb_clean}")')
+                if mawb_clean:
+                    criteria_parts.append(f'(MAWB_MBL == "{mawb_clean}")')
+                if payload["data"]["Job_No"]:
+                    criteria_parts.append(f'(Job_No == {payload["data"]["Job_No"]})')
                 
-                self._set_status(f"● Searching for Job {job_no} in Zoho...", self.WARN_AMBER)
+                if not criteria_parts:
+                    criteria_str = '(Job_No == "")'
+                else:
+                    criteria_str = " || ".join(criteria_parts)
+
+                search_params = {"criteria": criteria_str}
+                
+                self._set_status(f"● Searching Zoho for matching record...", self.WARN_AMBER)
                 self.root.update()
+                
+                # DEBUG: Log the criteria being sent
+                print(f"[DEBUG] Search criteria: {criteria_str}")
                 
                 search_resp = requests.get(report_url, headers={"Authorization": f"Zoho-oauthtoken {token}"}, params=search_params)
                 if search_resp.status_code == 401:
                     token = self.refresh_zoho_token()
                     search_resp = requests.get(report_url, headers={"Authorization": f"Zoho-oauthtoken {token}"}, params=search_params)
                 
+                # DEBUG: Log search response for diagnosis
+                print(f"[DEBUG] Search HTTP {search_resp.status_code}: {search_resp.text[:500]}")
+                
                 existing_id = None
                 existing_record = {}
+                
                 if search_resp.status_code == 200:
                     s_data = search_resp.json().get("data", [])
-                    if s_data:
-                        existing_record = s_data[0]
-                        existing_id = existing_record.get("ID")
+                    # Python-side matching: Case insensitive, punctuation removed.
+                    # Priority 1: HAWB match. Priority 2: MAWB match. Priority 3: Job No match.
+                    for record in s_data:
+                        z_hawb = normalize_str(record.get("HAWB_HBL"))
+                        z_mawb = normalize_str(record.get("MAWB_MBL"))
+                        z_job  = normalize_str(record.get("Job_No"))
+                        
+                        if parsed_hawb_norm and parsed_hawb_norm == z_hawb:
+                            existing_record = record
+                            existing_id = record.get("ID")
+                            print(f"[DEBUG] Matched by HAWB: {parsed_hawb_norm} == {z_hawb}")
+                            break
+                        elif parsed_mawb_norm and parsed_mawb_norm == z_mawb:
+                            existing_record = record
+                            existing_id = record.get("ID")
+                            print(f"[DEBUG] Matched by MAWB: {parsed_mawb_norm} == {z_mawb}")
+                            break
+                        elif parsed_job_norm and parsed_job_norm == z_job:
+                            existing_record = record
+                            existing_id = record.get("ID")
+                            print(f"[DEBUG] Matched by Job No: {parsed_job_norm} == {z_job}")
+                            break
+                    
+                    if not existing_id:
+                        print(f"[DEBUG] No Python-side match found. Candidates returned: {len(s_data)}")
+                elif search_resp.status_code != 200:
+                    # Surface the search error visually instead of silently creating a new record
+                    print(f"[WARN] Zoho search failed with HTTP {search_resp.status_code}")
+                    self._set_status(f"⚠ Search returned HTTP {search_resp.status_code} — falling through to create", self.WARN_AMBER)
+                    self.root.update()
 
                 if existing_id:
-                    self._set_status(f"● Updating Job {job_no} (Missing Fields Only)...", self.WARN_AMBER)
+                    matched_by = "HAWB/MAWB" if not existing_record.get("Job_No") else "Job No"
+                    self._set_status(f"● Updating Record {existing_id} ({matched_by} match)...", self.WARN_AMBER)
                     self.root.update()
                     
                     # Create a non-destructive payload
@@ -762,6 +824,7 @@ class ChecklistParserApp:
                         z_val = existing_record.get(key)
                         
                         # If the value in Zoho is completely empty, it is safe to push our new value
+                        # This ensures the Job_No gets pushed if it was missing!
                         if not z_val or z_val == "null" or str(z_val).strip() == "":
                             safe_payload_data[key] = val
                             
@@ -769,9 +832,9 @@ class ChecklistParserApp:
                     
                     patch_url = f"{report_url}/{existing_id}"
                     resp = requests.patch(patch_url, headers={"Authorization": f"Zoho-oauthtoken {token}"}, json=safe_payload, timeout=15)
-                    action_msg = "Updated missing fields in"
+                    action_msg = "Updated existing record in"
                 else:
-                    self._set_status(f"● Creating Job {job_no}...", self.WARN_AMBER)
+                    self._set_status(f"● Creating new Job record...", self.WARN_AMBER)
                     self.root.update()
                     resp = requests.post(url, headers={"Authorization": f"Zoho-oauthtoken {token}"}, json=payload, timeout=15)
                     action_msg = "Created new record in"
