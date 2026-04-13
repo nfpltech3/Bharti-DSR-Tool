@@ -741,13 +741,12 @@ class ChecklistParserApp:
                 parsed_mawb_norm = normalize_str(raw_mawb)
                 parsed_job_norm = normalize_str(payload["data"]["Job_No"])
 
-                # Build OR search using exact == matches (proven Zoho V2 API syntax).
+                # Build OR search using HAWB and Job No only (proven Zoho V2 API syntax).
+                # MAWB is excluded: multiple shipments share a single MAWB (consolidated cargo).
                 # Python-side normalization handles case/punctuation differences.
                 criteria_parts = []
                 if hawb_clean:
                     criteria_parts.append(f'(HAWB_HBL == "{hawb_clean}")')
-                if mawb_clean:
-                    criteria_parts.append(f'(MAWB_MBL == "{mawb_clean}")')
                 if payload["data"]["Job_No"]:
                     criteria_parts.append(f'(Job_No == {payload["data"]["Job_No"]})')
                 
@@ -778,21 +777,15 @@ class ChecklistParserApp:
                 if search_resp.status_code == 200:
                     s_data = search_resp.json().get("data", [])
                     # Python-side matching: Case insensitive, punctuation removed.
-                    # Priority 1: HAWB match. Priority 2: MAWB match. Priority 3: Job No match.
+                    # Priority 1: HAWB match. Priority 2: Job No match.
                     for record in s_data:
                         z_hawb = normalize_str(record.get("HAWB_HBL"))
-                        z_mawb = normalize_str(record.get("MAWB_MBL"))
                         z_job  = normalize_str(record.get("Job_No"))
                         
                         if parsed_hawb_norm and parsed_hawb_norm == z_hawb:
                             existing_record = record
                             existing_id = record.get("ID")
                             print(f"[DEBUG] Matched by HAWB: {parsed_hawb_norm} == {z_hawb}")
-                            break
-                        elif parsed_mawb_norm and parsed_mawb_norm == z_mawb:
-                            existing_record = record
-                            existing_id = record.get("ID")
-                            print(f"[DEBUG] Matched by MAWB: {parsed_mawb_norm} == {z_mawb}")
                             break
                         elif parsed_job_norm and parsed_job_norm == z_job:
                             existing_record = record
