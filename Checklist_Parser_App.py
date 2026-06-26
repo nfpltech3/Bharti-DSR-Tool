@@ -1,3 +1,4 @@
+
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 import pdfplumber
@@ -64,6 +65,36 @@ class ChecklistParserApp:
         self.mode_options    = ["Air", "Sea (LCL)", "Sea (FCL)", "Sea (BB)"]
         self.port_options    = ["MUM", "NHAVA SHEVA"]
         self.be_type_options = ["SEZ-Z", "SEZ-T", "Home"]
+
+        self.employee_options = [
+            "Mahadev Patil", "Jaynarayan Gupta", "Dilip Shelar", "Suyog Bhuvad",
+            "Arjun Bhatt", "Rushi Surve", "Aayush Vaishya", "Uttam Nevrekar",
+            "Omkar Padave", "Jugesh Kumar", "Saurabh Barwal", "Dattatrey Yerande",
+            "Jaya Shetty", "Prakash Khude", "Ashwini Vedpathak", "Vinod Tawade",
+            "Yashwant Pathare", "Avinash Bhogle", "Vaibhav Dhamankar", "Arun Uthaman"
+        ]
+        self.employee_id_map = {
+            "Mahadev Patil": "340763000004979091",
+            "Jaynarayan Gupta": "340763000004704480",
+            "Dilip Shelar": "340763000004563160",
+            "Suyog Bhuvad": "340763000004200032",
+            "Arjun Bhatt": "340763000003763001",
+            "Rushi Surve": "340763000003361145",
+            "Aayush Vaishya": "340763000003357337",
+            "Uttam Nevrekar": "340763000003336771",
+            "Omkar Padave": "340763000003336659",
+            "Jugesh Kumar": "340763000003336651",
+            "Saurabh Barwal": "340763000001700465",
+            "Dattatrey Yerande": "340763000001406664",
+            "Jaya Shetty": "340763000001232619",
+            "Prakash Khude": "340763000001232615",
+            "Ashwini Vedpathak": "340763000001232611",
+            "Vinod Tawade": "340763000001232607",
+            "Yashwant Pathare": "340763000001232603",
+            "Avinash Bhogle": "340763000001232599",
+            "Vaibhav Dhamankar": "340763000001232595",
+            "Arun Uthaman": "340763000001232591",
+        }
 
         self.parsed_entries = {}
         self._mandatory_combos = {}
@@ -318,6 +349,58 @@ class ChecklistParserApp:
         self._mandatory_combos["Port"] = self.combo_port
         row += 1
 
+        # Assigned To
+        self._mandatory_label("Assigned To:", row, 0)
+        self.combo_assigned = ttk.Combobox(
+            self.form_frame,
+            values=self.employee_options,
+            font=("Arial", 10),
+            state="normal"   # allow typing/searching
+        )
+
+        self.combo_assigned.grid(row=row, column=1, sticky="we", padx=(0, 30), pady=10)
+        self._mandatory_combos["Assigned To"] = self.combo_assigned
+
+        def filter_assigned(event):
+            # Ignore navigation / control keys
+            if event.keysym in (
+                "Up", "Down", "Left", "Right",
+                "Return", "Escape", "Tab",
+                "Shift_L", "Shift_R", "Control_L", "Control_R"
+            ):
+                return
+
+            typed_value = self.combo_assigned.get()
+
+            if typed_value.strip() == "":
+                filtered_values = self.employee_options
+            else:
+                search_text = typed_value.lower().strip()
+                filtered_values = [
+                    item for item in self.employee_options
+                    if search_text in item.lower()
+                ]
+
+            # Update dropdown values
+            self.combo_assigned["values"] = filtered_values
+
+            # Keep what user typed
+            self.combo_assigned.delete(0, "end")
+            self.combo_assigned.insert(0, typed_value)
+            self.combo_assigned.icursor("end")
+
+            # Open dropdown only if there are matching values
+            if filtered_values:
+                self.combo_assigned.after(100, lambda: self.combo_assigned.event_generate("<Down>"))
+
+        def assigned_selected(event):
+            selected_name = self.combo_assigned.get()
+            self.combo_assigned.set(selected_name)
+
+        self.combo_assigned.bind("<KeyRelease>", filter_assigned)
+        self.combo_assigned.bind("<<ComboboxSelected>>", assigned_selected)
+        row += 1
+
         # Push button summary & action
         self.summary_label = tk.Label(self.form_frame, text="", font=("Arial", 10), fg=self.MUTED_GRAY, bg=self.WHITE, anchor="w")
         self.summary_label.grid(row=row, column=0, columnspan=4, sticky="we", pady=(15, 5))
@@ -373,6 +456,8 @@ class ChecklistParserApp:
             else: widget.delete(0, tk.END)
         self.entry_hawb.delete(0, tk.END)
         self.entry_mawb.delete(0, tk.END)
+        if hasattr(self, 'combo_assigned'):
+            self.combo_assigned.set("")
         
         self.entry_eta.delete(0, tk.END)
         self.entry_eta.insert(0, "dd-MMM-yyyy")
@@ -677,6 +762,12 @@ class ChecklistParserApp:
         branch   = self.combo_branch.get()
         mode     = self.combo_mode.get()
         port     = self.combo_port.get()
+        assigned = self.combo_assigned.get()
+        assigned_id = self.employee_id_map.get(assigned, "")
+
+        if mode == "Air" and not assigned_id:
+            messagebox.showwarning("Validation Error", "Please select a valid employee from the list for Checklist Assigned To.")
+            return
 
         # GUI validations removed so users can leave fields blank when updating existing jobs.
 
@@ -706,6 +797,7 @@ class ChecklistParserApp:
                 "ETA": eta_formatted,
                 "Importer": self.importer_id_map.get(importer, ""),
                 "Branch": branch, "Mode": mode, "Port_Airtel": port,
+                "Checklist_assigned_to": assigned_id,
                 "BE_Type": self.parsed_entries["BE_Type"].get(),
                 "Supplier_Exporter": self.parsed_entries["Supplier_Exporter"].get().strip(),
                 "Added_By": os.getlogin(),
