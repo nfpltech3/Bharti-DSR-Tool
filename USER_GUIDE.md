@@ -1,50 +1,46 @@
-# Bharti DSR Consolidation System User Guide
+# Bharti DSR Consolidation System: User Guide
 
 ## Introduction
-The Bharti DSR Consolidation System is a comprehensive data management suite used to automate the extraction, synchronization, and manipulation of shipping and customs data for Nagarkot Forwarders. It includes a Checklist Parser to extract Job Data from PDFs and push it directly into the Zoho "Shakti Pre-Alert", as well as robust Excel formatting and merging tools for manual DSR reports.
+This tool automates shipping and customs data entry for Nagarkot Forwarders. It performs two main tasks: 
+1. **Checklist Parser:** Extracts job data from PDFs and pushes it to Zoho (Shakti Pre-Alert).
+2. **Excel Importer:** Merges and formats Excel data for manual DSR reports.
 
-## How to Use
+## Setup & Launch
+* Keep the application files (`.exe`) and the `.env` file in the same folder. *(The `.env` file is required as it securely stores connection keys).*
+* Double-click `Checklist_Parser_App.exe` or `standalone_excel_import.exe` to open the tools. No Python installation is required.
 
-### 1. Launching the App
-Run the pre-compiled applications directly from the generated `.exe` files located in the `dist/` directory.
-Double-click `Checklist_Parser_App.exe` or `standalone_excel_import.exe`. No further Python installation is required when running the executables. Ensure they run from a directory containing the `.env` file since it stores API secure keys.
+## Step-by-Step Workflow
 
-### 2. The Workflow (Step-by-Step)
+### Phase A: PDF Parsing & Zoho Sync
+1. **Launch:** Open `Checklist_Parser_App.exe`.
+2. **Upload:** Click **UPLOAD CHECKLIST(S)** and select your `.pdf` file(s).
+3. **Review & Edit:** The app automatically extracts the job details (Job Number, HBL, Mode, Port, etc.) and item quantities. 
+   * *Note:* You can manually edit any field. If the ETA date format is invalid, the system will reject it until corrected.
+4. **Sync:** Click **PUSH TO SHAKTI PRE-ALERT** to send the displayed record to Zoho.
+5. **Next File:** If you uploaded multiple PDFs, the app will automatically load the next one in the queue.
 
-#### Phase A: Checklist Parsing & Push to Zoho
-1. **Launch**: Open `Checklist_Parser_App.exe`.
-2. **UPLOAD CHECKLIST(S)**: Go to the Checklist Parser tab, click the upload button, and select one or more `.pdf` files.
-3. **Review & Edit**: The system automatically pulls details (Job Number, HBL, MBL, Mode, Port, Subform lines) from the PDF. You can modify any parsed fields or manual inputs (ETA, Branch). 
-   - *Note: If ETA is invalid, it will revert your input or ignore it till correctly entered.*
-4. **PUSH TO SHAKTI PRE-ALERT**: Clicks send the visible Job Number and sub-details directly into the centralized Zoho Creator database.
-5. **Next File**: If multiple files were uploaded, it will automatically parse the next file and cue it for pushing.
+### Phase B: Excel Merging & Imports
+1. **Launch:** Open `standalone_excel_import.exe`.
+2. **Merge DSRs (Tab 1):** Click **SELECT FILES & MERGE**. Upload the exported Zoho DSR report first, followed by your Manual DSR Excel file. The tool will automatically match the columns.
+3. **Import Subforms (Tab 2):** Click **SELECT SUBFORM EXCEL & PUSH** to upload an Excel file and push subform items directly into Zoho.
 
-#### Phase B: Manual DSR Merging (Standalone Excel App)
-1. **Launch**: Open `standalone_excel_import.exe`.
-2. **Tab 1 - Merge Manual Fields**: Hit "SELECT FILES & MERGE". Upload the exported Zoho DSR report, then the Manual DSR Excel file.
-   - *Note: The system automatically matches 20+ columns aliases to merge specific field data accurately.*
-3. **Tab 2 - Import Airtel Subforms**: Switch tabs, click "SELECT SUBFORM EXCEL & PUSH" to selectively patch subform items directly into Zoho Pre-Alert rows.
+## Interface Guide (Checklist Parser)
 
-## Interface Reference
-
-### Checklist Parser Controls
-| Control / Input | Description | Expected Format |
+| Field / Button | What it does | Required Format |
 | :--- | :--- | :--- |
-| **UPLOAD CHECKLIST(S)** | Main button to select source `.pdf` files. | PDF files |
-| **Job No** | Scraped job identifier. Can be manually altered to update a specific un-parsed record instead. | Numeric Job Number |
-| **ETA Date Picker** | Visual calendar or manual entry field for ship arrival times. | DD-MMM-YYYY |
-| **MAWB / MBL** | Master Air/Bill of Lading tracking value. | String / Dash Separated |
-| **Importer** | Determines customer branch lookup. Required for pushing to Zoho. | Dropdown Selection |
-| **BE Type / Mode / Port** | Shipment identifiers matched from PDF context. | Dropdown Selection |
+| **UPLOAD CHECKLIST(S)** | Selects the source files. | `.pdf` files only |
+| **Job No** | The extracted job identifier. Can be manually edited. | Numeric digits |
+| **ETA Date Picker** | The ship's arrival date. | `DD-MMM-YYYY` |
+| **MAWB / MBL** | The master tracking number. | Text with dashes |
+| **Importer** | The customer branch (Required for Zoho push). | Dropdown selection |
+| **BE Type / Mode / Port** | Shipment details extracted from the PDF. | Dropdown selection |
 
-## Troubleshooting & Validations
+## Troubleshooting
 
-If you see an error, check this table:
-
-| Message | What it means | Solution |
+| Error Message | Cause | Solution |
 | :--- | :--- | :--- |
-| `Use dd-mm-yyyy` | The ETA date format does not conform to the required layout. | Select the date using the Calendar `🗓` icon, or manually type in `DD-MM-YYYY` format. |
-| `For Air mode, MAWB must be exactly 11 numeric digits` | You have selected the Mode "Air" which demands an 11-digit AWB, but the input contained invalid characters/lengths. | Re-verify your Master Air Waybill tracking format and remove trailing spaces. |
-| `Could not find Job No column in the Zoho Export!` | The Excel file uploaded to the Merging tool is missing a recognized Job reference column. | Ensure the report export includes a `Job No`, `Job Number`, or `Inbond Job` column Header. |
-| `Parse failed: [error log]` | The PDF is illegible or structurally completely unrecognized by the text reader. | Choose "Skip" and process that specific order manually, then notify an admin. |
-| `Missing required columns: • [Field Name]` | The Subform patch Excel is lacking a vital constraint field layout (e.g. `Invoice No`). | Format the source Excel subform to include headers matching `Invoice No`, `Date`, etc. |
+| `Use dd-mm-yyyy` | The ETA date is in the wrong format. | Use the Calendar icon to select the date, or type it exactly as `DD-MM-YYYY`. |
+| `For Air mode, MAWB must be exactly 11 numeric digits` | Air shipments require a strict 11-digit tracking number. | Fix the tracking number and remove any accidental spaces. |
+| `Could not find Job No column...` | The uploaded Excel file is missing a Job reference column. | Check the source Excel file and ensure a `Job No` or `Job Number` column exists. |
+| `Missing required columns: [Field]` | The Subform Excel file is missing a mandatory column. | Add the missing header (e.g., `Invoice No`, `Date`) to the Excel file. |
+| `Parse failed: [error log]` | The PDF text is illegible or the layout is unrecognized. | Skip this file, process the record manually, and notify the admin. |

@@ -8,3 +8,30 @@ build/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Runtime / temporary files
+zoho_token.json
+last_zoho_payload.json
+prealert_submission_log.csv
+build_log.txt
+*.pdf
+
+# Excel files
+*.xlsx
+
+# Backups
+*.bak
+
+# Diagnostics and scratch files
+*.txt
+rebuild_entire_dsr function
+test_parser.py
+dump_cols.py
+
+# Temp mapping JSONs and Secrets
+self_client.json
+zoho_config.json
+cols*.json
+dsr_cols*.json
+dump_cols.json
+output.json

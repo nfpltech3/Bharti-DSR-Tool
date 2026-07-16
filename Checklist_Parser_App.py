@@ -662,6 +662,13 @@ class ChecklistParserApp:
             elif re.search(r'\bLCL\b', text_all): mode = "Sea (LCL)"
             elif re.search(r'\bBB\b',  text_all): mode = "Sea (BB)"
             else: mode = "Sea (LCL)"
+        else:
+            m2 = re.search(r'Custom\s+stn:\s+([^,\]]+)', text_all, re.IGNORECASE)
+            if m2:
+                stn = m2.group(1).upper()
+                if "AIR" in stn: mode = "Air"
+                elif "NHAVA" in stn or "SEA" in stn: mode = "Sea (LCL)"
+                if "BOM" in stn or "MUMBAI" in stn or "SAHAR" in stn or "NHAVA" in stn: port = "MUM"
 
         supplier = ""
         m = re.search(r'Supplier\s*Name\s+(.+)', text_all, re.IGNORECASE)
@@ -699,7 +706,7 @@ class ChecklistParserApp:
         sw_items = []
         sw_match = re.search(r'SINGLE\s+WINDOW\s*-\s*Additional\s+Product\s+Information(.*?)DUTY\s+Details', text_all, re.DOTALL | re.IGNORECASE)
         if sw_match:
-            for m2 in re.finditer(r'(\d+)\s+(\d+)\s+Item\s+Characteristics\s+Standard\s+UQC\s+([\d\.]+)\s+NOS', sw_match.group(1), re.IGNORECASE):
+            for m2 in re.finditer(r'(\d+)\s+(\d+)\s+Item\s+Characteristics\s+Standard\s+UQC\s+([\d\.]+)\s+[A-Z]+', sw_match.group(1), re.IGNORECASE):
                 sw_items.append({"inv_idx": m2.group(1), "item_idx": m2.group(2), "qty": int(float(m2.group(3)))})
 
         item_desc_map = {}
