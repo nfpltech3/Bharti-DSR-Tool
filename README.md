@@ -398,7 +398,19 @@ STEP 5: Handle Orphan Exbonds
                     ▼
            ┌────────────────┐
            │ MASTER DSR ROW │
-           │ (One per       │
-           │  shipment)     │
-           └────────────────┘
+            └────────────────┘
 ```
+
+---
+
+## 10. API Usage Optimization (Checklist Parser)
+
+When pushing parsed checklists to Zoho (via the "Push to Shakti Pre-Alert" action), the application is highly optimized to minimize API consumption:
+
+- **Single Checklist**: Uses exactly **2 API calls** per job.
+  1. `GET` call to search for duplicate records (matching Job No or HAWB).
+  2. `POST` (create new) or `PATCH` (update existing) call to submit the data.
+- **Batched Checklists**: If you queue multiple checklists (e.g., 3 or 4 at once), they are processed sequentially. The API calls scale linearly:
+  - 3 checklists = **6 API calls**
+  - 4 checklists = **8 API calls**
+- **Token Refresh**: The OAuth token automatically refreshes if expired, adding a temporary 1-call overhead. However, once refreshed, the token is valid for 1 hour, meaning subsequent queued checklists in the same session will not need to refresh.

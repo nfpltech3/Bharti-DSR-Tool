@@ -699,7 +699,7 @@ class ChecklistParserApp:
             if m_nd:
                 invoice_headers.append({
                     "idx": str(idx), "num": m_nd.group(1), "date": m_nd.group(2),
-                    "val": m_v.group(1).replace(",","").split(".")[0] if m_v else "0"
+                    "val": m_v.group(1).replace(",","") if m_v else "0"
                 })
                 idx += 1
 
