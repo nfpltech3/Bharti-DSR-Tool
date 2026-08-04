@@ -713,13 +713,17 @@ class ChecklistParserApp:
         for m2 in re.finditer(r'^\s*(\d+)\s+\d{8}\s+(.+?)(?=\n\s*[\d\.]+\s+[\d\.]+\s+\d{8}|\n\s*AIDC)', text_all, re.MULTILINE | re.DOTALL):
             slot = m2.group(1)
             desc = re.sub(r'\s+', ' ', m2.group(2)).strip()
-            item_desc_map[slot] = desc
+            if slot not in item_desc_map:
+                item_desc_map[slot] = []
+            item_desc_map[slot].append(desc)
 
         subform_rows = []
         for sw in sw_items:
             inv = next((i for i in invoice_headers if i["idx"] == sw["inv_idx"]), None)
             if inv:
-                full_desc = item_desc_map.get(sw["item_idx"], "")
+                full_desc = ""
+                if sw["item_idx"] in item_desc_map and item_desc_map[sw["item_idx"]]:
+                    full_desc = item_desc_map[sw["item_idx"]].pop(0)
                 model = full_desc.split()[0] if full_desc else ""
                 try:
                     formatted_date = datetime.strptime(inv["date"], "%d-%b-%Y").strftime("%d-%b-%Y").upper()
@@ -1043,15 +1047,18 @@ class ChecklistParserApp:
                                 curr_p += 6
                         else: curr_p += 6 
 
-                    for lst in (r_nums, r_dates, r_vals):
-                        last_v = None
-                        for i in range(len(lst)):
-                            if lst[i] == last_v: lst[i] = ""
-                            else: last_v = lst[i]
+                    last_inv = None
+                    for i in range(len(r_nums)):
+                        if r_nums[i] == last_inv:
+                            r_nums[i] = ""
+                            r_dates[i] = ""
+                            r_vals[i] = ""
+                        else:
+                            last_inv = r_nums[i]
 
                     inv_nums.append('\n'.join([x for x in r_nums if x]))
-                    inv_dates.append('\n'.join([x for x in r_dates if x]))
-                    inv_vals.append('\n'.join([x for x in r_vals if x]))
+                    inv_dates.append('\n'.join([x for x, num in zip(r_dates, r_nums) if num]))
+                    inv_vals.append('\n'.join([x for x, num in zip(r_vals, r_nums) if num]))
                     
                     mod_nos.append('\n'.join(r_mods))
                     item_descs.append('\n'.join(r_descs))
@@ -1075,19 +1082,7 @@ class ChecklistParserApp:
                 for x in series:
                     val = str(x).replace('.0','')
                     if val.strip() and val != 'nan':
-                        # Flatten existing newlines for clean deduplication
                         items.extend(val.split('\n'))
-                        
-                if series.name in ['Airtel DSR - Invoice Number', 'Airtel DSR - Invoice Date', 'Airtel DSR - Total Inv Value']:
-                    deduped = []
-                    last_val = None
-                    for it in items:
-                        if it == last_val and it != "": deduped.append("")
-                        elif it != "": 
-                            deduped.append(it)
-                            last_val = it
-                        else: deduped.append("")
-                    return '\n'.join(deduped)
                 return '\n'.join(items)
             df = df.groupby(main_cols, as_index=False, dropna=False)[subform_cols].agg(join_items)
 
