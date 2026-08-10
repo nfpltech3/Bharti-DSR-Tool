@@ -1080,9 +1080,11 @@ class ChecklistParserApp:
             def join_items(series):
                 items = []
                 for x in series:
-                    val = str(x).replace('.0','')
+                    val = str(x)
                     if val.strip() and val != 'nan':
-                        items.extend(val.split('\n'))
+                        for part in val.split('\n'):
+                            part = re.sub(r'\.0+$', '', part)
+                            items.append(part)
                 return '\n'.join(items)
             df = df.groupby(main_cols, as_index=False, dropna=False)[subform_cols].agg(join_items)
 
