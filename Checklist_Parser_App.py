@@ -64,7 +64,7 @@ class ChecklistParserApp:
         self.branch_options  = ["MUMBAI", "GUJARAT", "CHENNAI", "DELHI"]
         self.mode_options    = ["Air", "Sea (LCL)", "Sea (FCL)", "Sea (BB)"]
         self.port_options    = ["MUM", "NHAVA SHEVA"]
-        self.be_type_options = ["SEZ-Z", "SEZ-T", "Home"]
+        self.be_type_options = ["SEZ-Z", "Home"]
 
         self.employee_options = [
             "Mahadev Patil", "Jaynarayan Gupta", "Dilip Shelar", "Suyog Bhuvad",
@@ -295,7 +295,8 @@ class ChecklistParserApp:
         row += 1
 
         # ETA
-        self._mandatory_label("ETA:", row, 0)
+        tk.Label(self.form_frame, text="ETA:", bg=self.WHITE, font=("Arial", 10, "bold")).grid(
+            row=row, column=0, sticky="w", padx=(0, 10), pady=(8, 10))
         
         eta_outer = tk.Frame(self.form_frame, bg=self.WHITE, highlightthickness=1, highlightbackground=self.BORDER_GRAY, bd=0)
         eta_outer.grid(row=row, column=1, sticky="we", padx=(0, 30), pady=10)
@@ -401,6 +402,18 @@ class ChecklistParserApp:
         self.combo_assigned.bind("<<ComboboxSelected>>", assigned_selected)
         row += 1
 
+        # Is this Ex-Bond/SEZ-T job ?
+        tk.Label(self.form_frame, text="Is this Ex-Bond/SEZ-T job ?:", bg=self.WHITE, font=("Arial", 10, "bold")).grid(
+            row=row, column=0, sticky="w", padx=(0, 10), pady=(8, 10))
+        
+        self.var_exbond = tk.StringVar(value="No")
+        radio_frame = tk.Frame(self.form_frame, bg=self.WHITE)
+        radio_frame.grid(row=row, column=1, sticky="w", padx=(0, 30), pady=(8, 10))
+        
+        tk.Radiobutton(radio_frame, text="Yes", variable=self.var_exbond, value="Yes", bg=self.WHITE, font=("Arial", 10)).pack(side=tk.LEFT)
+        tk.Radiobutton(radio_frame, text="No", variable=self.var_exbond, value="No", bg=self.WHITE, font=("Arial", 10)).pack(side=tk.LEFT, padx=10)
+        row += 1
+
         # Push button summary & action
         self.summary_label = tk.Label(self.form_frame, text="", font=("Arial", 10), fg=self.MUTED_GRAY, bg=self.WHITE, anchor="w")
         self.summary_label.grid(row=row, column=0, columnspan=4, sticky="we", pady=(15, 5))
@@ -458,6 +471,8 @@ class ChecklistParserApp:
         self.entry_mawb.delete(0, tk.END)
         if hasattr(self, 'combo_assigned'):
             self.combo_assigned.set("")
+        if hasattr(self, 'var_exbond'):
+            self.var_exbond.set("No")
         
         self.entry_eta.delete(0, tk.END)
         self.entry_eta.insert(0, "dd-MMM-yyyy")
@@ -776,8 +791,16 @@ class ChecklistParserApp:
         assigned = self.combo_assigned.get()
         assigned_id = self.employee_id_map.get(assigned, "")
 
+        if not importer or not branch or not mode:
+            messagebox.showwarning("Validation Error", "Importer, Branch, and Mode are mandatory fields. Please fill them before pushing.")
+            return
+
         if mode == "Air" and not assigned_id:
             messagebox.showwarning("Validation Error", "Please select a valid employee from the list for Checklist Assigned To.")
+            return
+
+        if self.var_exbond.get() == "Yes":
+            messagebox.showwarning("Validation Error", "This tool cannot process Ex-Bond/SEZ-T jobs. Please process this job manually in Shakti.")
             return
 
         # GUI validations removed so users can leave fields blank when updating existing jobs.
@@ -812,6 +835,7 @@ class ChecklistParserApp:
                 "BE_Type": self.parsed_entries["BE_Type"].get(),
                 "Supplier_Exporter": self.parsed_entries["Supplier_Exporter"].get().strip(),
                 "Added_By": os.getlogin(),
+                "Is_this_Ex_Bond_SEZ_T_job": self.var_exbond.get(),
                 "Airtel_DSR": self.parsed_data.get("Subform_Rows", [])
             }
         }

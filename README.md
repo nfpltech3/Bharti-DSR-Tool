@@ -13,7 +13,7 @@ In **Logisys**, a single bonded warehousing shipment is split into **two separat
 
 ---
 
-## 2. Data Sources in Zoho Creator
+## 2. Data Sources
 
 ### Source A: `View_All_Jobs` (Pre-Alert Form Report)
 Contains **operational & workflow** data — dates, status flags, TAT, checklist progress, billing milestones.
@@ -405,7 +405,7 @@ STEP 5: Handle Orphan Exbonds
 
 ## 10. API Usage Optimization (Checklist Parser)
 
-When pushing parsed checklists to Zoho (via the "Push to Shakti Pre-Alert" action), the application is highly optimized to minimize API consumption:
+When pushing parsed checklists to Shakti, the application is highly optimized to minimize API consumption:
 
 - **Single Checklist**: Uses exactly **2 API calls** per job.
   1. `GET` call to search for duplicate records (matching Job No or HAWB).
@@ -414,3 +414,30 @@ When pushing parsed checklists to Zoho (via the "Push to Shakti Pre-Alert" actio
   - 3 checklists = **6 API calls**
   - 4 checklists = **8 API calls**
 - **Token Refresh**: The OAuth token automatically refreshes if expired, adding a temporary 1-call overhead. However, once refreshed, the token is valid for 1 hour, meaning subsequent queued checklists in the same session will not need to refresh.
+
+### C. Search (Checking for Duplicates)
+
+Before creating a new record, the app queries the report `View_All_Jobs` using a specific search criteria: `(HAWB_HBL == "{hawb}") || (Job_No == "{job_no}")`.
+*Note:* MAWB is deliberately excluded from the search because consolidated cargo shipments often share the same MAWB.
+Once results are returned, it does a Python-side strict match by stripping punctuation and comparing strings.
+*   **Priority 1:** Match by HAWB.
+*   **Priority 2:** Match by Job No.
+
+### D. Push to Shakti (Update vs. Create)
+
+*   **If a match IS found (PATCH):** It does a non-destructive update. It iterates through your payload and only pushes data for fields that are currently null or completely empty in Shakti. It will not overwrite existing data, but it will push the `Airtel_DSR` subform. It sends a `PATCH` request to update the record.
+*   **If NO match is found (POST):** It creates a brand new record by sending a `POST` request to the Pre_Alert form endpoint.
+
+---
+
+## 11. Mandatory Fields & Validations (Push to Shakti)
+
+Before a checklist can be successfully pushed to Shakti, the application enforces the following strict validations:
+
+1.  **Importer**: Must not be empty.
+2.  **Mode**: Must not be empty.
+3.  **Branch**: Must not be empty.
+4.  **Is this Ex-Bond/SEZ-T job?**: Must be explicitly set to **No**. If set to "Yes", the tool will block the push because Ex-Bond/SEZ-T jobs require the In Bond Job No, which must be entered manually in Shakti.
+5.  **Assigned To (Conditional)**: If the `Mode` is set to `"Air"`, an employee *must* be selected from the dropdown list.
+6.  **ETA (Format Check)**: While ETA is not strictly mandatory, if a custom date is provided, it *must* perfectly match the `dd-mm-yyyy` format.
+7.  **MAWB (Format Check)**: If the `Mode` is set to `"Air"` and a MAWB is provided, it *must* resolve to exactly 11 numeric digits to be formatted properly.
